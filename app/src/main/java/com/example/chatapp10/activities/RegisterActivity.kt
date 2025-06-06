@@ -10,6 +10,7 @@ import com.example.chatapp10.R
 import com.example.chatapp10.data.User
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -20,6 +21,7 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var emailEditText: EditText
     private lateinit var passwordEditText: EditText
     private lateinit var registerButton: Button
+    private lateinit var toLoginButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +34,11 @@ class RegisterActivity : AppCompatActivity() {
         emailEditText = findViewById(R.id.emailEditText)
         passwordEditText = findViewById(R.id.passwordEditText)
         registerButton = findViewById(R.id.registerButton)
+        toLoginButton = findViewById(R.id.toLoginButton)
+
+        toLoginButton.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
 
         registerButton.setOnClickListener {
             val email = emailEditText.text.toString()
@@ -47,16 +54,19 @@ class RegisterActivity : AppCompatActivity() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val currentUser = auth.currentUser
+                        val uid = currentUser!!.uid
+
                         val user = User(
-                            uid = currentUser!!.uid,
+                            uid = uid,
                             username = username,
                             email = email
                         )
 
                         db.collection("users")
-                            .document(currentUser.uid)
+                            .document(uid)
                             .set(user)
                             .addOnSuccessListener {
+                                saveFcmToken(uid) // ✅ Save FCM token after successful user save
                                 Toast.makeText(this, "User profile saved", Toast.LENGTH_SHORT).show()
                                 startActivity(Intent(this, LoginActivity::class.java))
                                 finish()
@@ -69,5 +79,27 @@ class RegisterActivity : AppCompatActivity() {
                     }
                 }
         }
+    }
+
+    private fun saveFcmToken(uid: String) {
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    val tokenMap = hashMapOf("token" to token)
+
+                    db.collection("tokens")
+                        .document(uid)
+                        .set(tokenMap)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "FCM token saved", Toast.LENGTH_SHORT).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(this, "Failed to save FCM token", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    Toast.makeText(this, "Failed to get FCM token", Toast.LENGTH_SHORT).show()
+                }
+            }
     }
 }

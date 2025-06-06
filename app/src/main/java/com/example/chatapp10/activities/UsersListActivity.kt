@@ -33,6 +33,7 @@ class UsersListActivity : AppCompatActivity() {
         val adapter = UsersAdapter(users) { selectedUser ->
             val intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("receiverId", selectedUser.uid)
+            intent.putExtra("chatUsername", selectedUser.username)
             startActivity(intent)
         }
         usersRecyclerView.adapter = adapter

@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="8dp"
-    android:layout_margin="4dp">
+    android:layout_margin="4dp"
+    android:background="@drawable/bg_message_received">
 
     <TextView
         android:id="@+id/messageTextView"

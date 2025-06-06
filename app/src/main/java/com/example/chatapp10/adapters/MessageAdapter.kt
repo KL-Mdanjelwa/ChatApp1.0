@@ -10,10 +10,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.chatapp10.R
 import com.example.chatapp10.data.Message
 
-class MessageAdapter(private val messages: List<Message>, private val currentUserId: String) :
-    RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
+class MessageAdapter(
+    private val messages: List<Message>,
+    private val currentUserId: String
+) : RecyclerView.Adapter<MessageAdapter.MessageViewHolder>() {
 
-    inner class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class MessageViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val messageTextView: TextView = itemView.findViewById(R.id.messageTextView)
         val container: LinearLayout = itemView.findViewById(R.id.messageContainer)
     }
@@ -24,25 +26,30 @@ class MessageAdapter(private val messages: List<Message>, private val currentUse
         return MessageViewHolder(view)
     }
 
-    override fun getItemCount() = messages.size
+    override fun getItemCount(): Int = messages.size
 
     override fun onBindViewHolder(holder: MessageViewHolder, position: Int) {
         val message = messages[position]
         holder.messageTextView.text = message.messageText
 
-        // Align message left or right based on sender
         val params = holder.container.layoutParams as ViewGroup.MarginLayoutParams
+        val layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+
         if (message.senderId == currentUserId) {
-            holder.container.gravity = Gravity.END
-            params.marginStart = 50
-            params.marginEnd = 0
+            layoutParams.gravity = Gravity.END
+            layoutParams.marginStart = 50
+            layoutParams.marginEnd = 0
             holder.container.setBackgroundResource(R.drawable.bg_message_sent)
         } else {
-            holder.container.gravity = Gravity.START
-            params.marginStart = 0
-            params.marginEnd = 50
+            layoutParams.gravity = Gravity.START
+            layoutParams.marginStart = 0
+            layoutParams.marginEnd = 50
             holder.container.setBackgroundResource(R.drawable.bg_message_received)
         }
-        holder.container.layoutParams = params
+
+        holder.container.layoutParams = layoutParams
     }
 }
